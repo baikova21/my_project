@@ -1,7 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <ctime>
+
 using namespace std;
+
 class computer_software {
 private:
 	char* brand = NULL; // Бренд
@@ -11,23 +13,29 @@ private:
 	int series_number; // Серийный номер
 
 public:
-	void constructor(); // Псевдоконструктор по умолчанию
-	void constructor(char* Brand, int Speed, int Version, int Type, int Series_number); // псевдоконструктор с параметрами
-	void destructor(); // Псевдодеструктор
+	computer_software(); // Конструктор по умолчанию
+	computer_software(char* Brand, int Speed, int Version, int Type, int Series_number); // Конструктор с параметрами
+	computer_software(const computer_software& s); // Копирующий конструктор
+	~computer_software(); // Деструктор
+	void copy(const computer_software& s); // Функция копирования полей одного объекта в другой
 
 	int get_work_speed() const; // Функция, которая возвращает значение поля work_speed
-	void get_software() const; // Вывод всех полей объекта
 	void set_software(); // Изменение всех полей объекта
+
+	computer_software& operator=(const computer_software& s); // перегрузка оператора присваивания
+	bool operator>(const computer_software& s); // перегрузка оператора "больше"
+	friend ostream& operator<<(ostream& out, const computer_software& s); // перегрузка оператора вывода
 };
 
+template <class T>
 class conteiner {
 private:
 	int capacity = 0; // Вместимость вектора
-	computer_software* mas; // Сам вектор
+	T* mas = NULL; // Сам вектор
 
 public:
-	void destructor(); // Псевдодеструктор
-	void set_vector(int Capacity); // Псевдоконструктор
+	~conteiner(); // Деструктор
+	conteiner(int Capacity); // Конструктор с параметром
 	void enter_vector(); // Изменение элементов вектора
 	void get_vector() const; // Вывод элементов вектора
 
@@ -40,30 +48,28 @@ public:
 int main() {
 	setlocale(LC_ALL, "rus");
 	srand(time(0));
-	conteiner vector; // объявляем вектор
-	vector.set_vector(4); // создаем вектор
-	vector.get_vector(); // выводим элементы вектора
+	conteiner<computer_software> vector(4); // Создаем вектор
+	vector.get_vector(); // Выводим элементы вектора
 	system("pause");
 	system("cls");
-	vector.enter_vector(); // изменяем элементы вектора
+	vector.enter_vector(); // Изменяем элементы вектора
 	system("cls");
-	vector.get_vector(); // выводим элементы вектора
+	vector.get_vector(); // Выводим элементы вектора
 	system("pause");
 	system("cls");
-	vector.search(); // поиск
+	vector.search(); // Поиск
 	system("pause");
 	system("cls");
-	vector.compare(); // сравнение
+	vector.compare(); // Сравнение
 	system("pause");
 	system("cls");
-	vector.sort(); // сортировка
-	vector.get_vector(); // выводим элементы вектора
-	vector.destructor(); // удаляем вектор
+	vector.sort(); // Сортировка
+	vector.get_vector(); // Выводим элементы вектора
 	system("pause");
 	return 0;
 }
 
-void computer_software::constructor()
+computer_software::computer_software()
 {
 	char def[] = "default";
 	brand = new char[strlen(def) + 1];
@@ -75,7 +81,7 @@ void computer_software::constructor()
 	series_number = 0;
 }
 
-void computer_software::constructor(char* Brand, int Speed, int Version, int Type, int Series_number)
+computer_software::computer_software(char* Brand, int Speed, int Version, int Type, int Series_number)
 {
 	brand = new char[strlen(Brand) + 1];
 	strcpy_s(brand, strlen(Brand) + 1, Brand);
@@ -86,24 +92,32 @@ void computer_software::constructor(char* Brand, int Speed, int Version, int Typ
 	series_number = Series_number;
 }
 
-void computer_software::destructor()
+computer_software::computer_software(const computer_software& s)
+{
+	copy(s);
+}
+
+computer_software::~computer_software()
 {
 	if (brand != NULL) delete[] brand;
+}
+
+void computer_software::copy(const computer_software& s)
+{
+	if (brand != NULL) delete[] brand;
+	if (s.brand != 0) {
+		brand = new char[strlen(s.brand) + 1];
+		strcpy_s(brand, strlen(s.brand) + 1, s.brand);
+	}
+	work_speed = s.work_speed;
+	version = s.version;
+	type = s.type;
+	series_number = s.series_number;
 }
 
 int computer_software::get_work_speed() const
 {
 	return work_speed;
-}
-
-void computer_software::get_software() const
-{
-	cout << "______________________________\n";
-	cout << "Бренд: " << brand << endl;
-	cout << "Скорость работы: " << work_speed << endl;
-	cout << "Версия: " << version << endl;
-	cout << "Тип: " << type << endl;
-	cout << "Серийный номер: " << series_number << endl;
 }
 
 void computer_software::set_software()
@@ -120,68 +134,94 @@ void computer_software::set_software()
 	series_number = rand() % 100;
 }
 
-void conteiner::destructor()
+computer_software& computer_software::operator=(const computer_software& s)
 {
-	for (int i = 0; i < capacity; i++) {
-		mas[i].destructor();
+	if (this != &s) {
+		copy(s);
 	}
+	return *this;
+}
+
+bool computer_software::operator>(const computer_software& s)
+{
+	return work_speed > s.work_speed;
+}
+
+template <class T>
+conteiner<T>::~conteiner()
+{
 	delete[] mas;
 }
 
-void conteiner::set_vector(int Capacity)
+template <class T>
+conteiner<T>::conteiner(int Capacity)
 {
 	if (Capacity > 0) {
 		capacity = Capacity;
-		mas = new computer_software[capacity];
-		for (int i = 0; i < capacity; i++) {
-			mas[i].constructor();
-		}
+		mas = new T[capacity];
 	}
 	else {
 		cout << "Ошибка создания!\n";
 	}
-
 }
 
-void conteiner::enter_vector()
+template <class T>
+void conteiner<T>::enter_vector()
 {
 	for (int i = 0; i < capacity; i++) {
 		mas[i].set_software();
 	}
 }
 
-void conteiner::get_vector() const
+template <class T>
+void conteiner<T>::get_vector() const
 {
 	for (int i = 0; i < capacity; i++) {
-		mas[i].get_software();
+		cout << mas[i];
 	}
 }
 
-void conteiner::search() const
+template <class T>
+void conteiner<T>::search() const
 {
 	int speed;
 	cout << "ПОИСК\nВведите скорость работы: "; cin >> speed;
 	for (int i = 0; i < capacity; i++) {
-		if (mas[i].get_work_speed() == speed) mas[i].get_software();
+		if (mas[i].get_work_speed() == speed) cout << mas[i];
 	}
 }
 
-void conteiner::compare() const
+template <class T>
+void conteiner<T>::compare() const
 {
 	int speed;
 	cout << "СРАВНЕНИЕ\nВведите скорость работы: "; cin >> speed;
 	for (int i = 0; i < capacity; i++) {
-		if (mas[i].get_work_speed() >= speed) mas[i].get_software();
+		if (mas[i].get_work_speed() >= speed) cout << mas[i];
 	}
 }
 
-void conteiner::sort()
+template <class T>
+void conteiner<T>::sort()
 {
 	for (int i = 0; i < capacity - 1; i++) {
 		for (int j = i + 1; j < capacity; j++) {
-			if (mas[i].get_work_speed() > mas[j].get_work_speed()) {
-				swap(mas[i], mas[j]);
+			if (mas[i] > mas[j]) {
+				T tmp = mas[i];
+				mas[i] = mas[j];
+				mas[j] = tmp;
 			}
 		}
 	}
+}
+
+ostream& operator<<(ostream& out, const computer_software& s)
+{
+	out << "______________________________\n";
+	out << "Бренд: " << s.brand << endl;
+	out << "Скорость работы: " << s.work_speed << endl;
+	out << "Версия: " << s.version << endl;
+	out << "Тип: " << s.type << endl;
+	out << "Серийный номер: " << s.series_number << endl;
+	return out;
 }
